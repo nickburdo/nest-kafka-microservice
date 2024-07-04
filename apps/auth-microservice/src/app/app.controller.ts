@@ -1,4 +1,6 @@
-import { Controller, Get } from '@nestjs/common';
+import { CreateUserDto } from '@nestjs-microservices/shared/dto';
+import { Controller, ValidationPipe } from '@nestjs/common';
+import { EventPattern, Payload } from '@nestjs/microservices';
 
 import { AppService } from './app.service';
 
@@ -6,8 +8,8 @@ import { AppService } from './app.service';
 export class AppController {
   constructor(private readonly appService: AppService) {}
 
-  @Get()
-  getData() {
-    return this.appService.getData();
+  @EventPattern('create_user')
+  handleUserCreate(@Payload(ValidationPipe) createUserDto: CreateUserDto) {
+    this.appService.createUser(createUserDto);
   }
 }
