@@ -15,6 +15,6 @@ export class AppController {
 
   @MessagePattern('get_user')
   handleGetUser(@Payload('userId', ParseIntPipe) userId: number) {
-    this.appService.getUser(userId);
+    return this.appService.getUser(userId);
   }
 }
