@@ -1,6 +1,7 @@
 import { MakePaymentDto } from '@nestjs-microservices/shared/dto';
 import { HttpStatus, Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { ClientKafka, RpcException } from '@nestjs/microservices';
+import { logger } from 'nx/src/utils/logger';
 import { map } from 'rxjs';
 
 @Injectable()
@@ -10,20 +11,17 @@ export class AppService implements OnModuleInit {
 
   processPayment(makePaymentDto: MakePaymentDto) {
     const { userId, amount } = makePaymentDto;
-    console.log('***** process payment', amount, 'for', userId);
     return this.authClient.send('get_user', JSON.stringify({ userId }))
       .pipe(
         map(user => {
           if (!user) {
-            console.log(`***** user ${userId} not found`);
             this.throwError(HttpStatus.NOT_FOUND, `User ${userId} not found`);
           }
           if (amount < 100) {
-            console.log(`***** Amount cannot be less than 100`);
             this.throwError(HttpStatus.BAD_REQUEST, 'Amount cannot be less than 100');
           }
 
-          console.log(`***** process payment for user ${user?.name} - amount: ${amount}`);
+          logger.log(`Process payment for user ${user?.name} - amount: ${amount}`);
           // TODO process payment
 
           return { amount, user };
