@@ -53,3 +53,7 @@ nx serve api-gateway
 nx serve auth-microservice
 nx serve payment-microservice
 ```
+
+## Thanks
+
+MANISH KUMAR for [Better Error Handling in Nest.JS](https://inside.caratlane.com/better-error-handling-in-nest-js-f12adf42ad8a)
