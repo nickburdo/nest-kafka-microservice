@@ -1,12 +1,17 @@
 import { CreateUserDto } from '@nestjs-microservices/shared/dto';
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { ClientKafka } from '@nestjs/microservices';
 
 @Injectable()
-export class AuthService {
+export class AuthService implements OnModuleInit {
   constructor(@Inject('AUTH_MICROSERVICE') private readonly authClient: ClientKafka) {}
 
   createUser(createUserDto: CreateUserDto) {
-    this.authClient.emit('create_user', JSON.stringify(createUserDto));
+    return this.authClient.send('create_user', JSON.stringify(createUserDto))
+  }
+
+  onModuleInit() {
+    this.authClient.subscribeToResponseOf('create_user');
+    this.authClient.subscribeToResponseOf('get_user');
   }
 }

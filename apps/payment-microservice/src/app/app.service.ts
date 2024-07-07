@@ -1,7 +1,7 @@
 import { MakePaymentDto } from '@nestjs-microservices/shared/dto';
-import { User } from '@nestjs-microservices/shared/entities';
-import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
-import { ClientKafka } from '@nestjs/microservices';
+import { HttpStatus, Inject, Injectable, OnModuleInit } from '@nestjs/common';
+import { ClientKafka, RpcException } from '@nestjs/microservices';
+import { map } from 'rxjs';
 
 @Injectable()
 export class AppService implements OnModuleInit {
@@ -11,17 +11,36 @@ export class AppService implements OnModuleInit {
   processPayment(makePaymentDto: MakePaymentDto) {
     const { userId, amount } = makePaymentDto;
     console.log('***** process payment', amount, 'for', userId);
-    this.authClient.send('get_user', JSON.stringify({ userId }))
-      .subscribe((user: User) => {
-        if (user) {
+    return this.authClient.send('get_user', JSON.stringify({ userId }))
+      .pipe(
+        map(user => {
+          if (!user) {
+            console.log(`***** user ${userId} not found`);
+            this.throwError(HttpStatus.NOT_FOUND, `User ${userId} not found`);
+          }
+          if (amount < 100) {
+            console.log(`***** Amount cannot be less than 100`);
+            this.throwError(HttpStatus.BAD_REQUEST, 'Amount cannot be less than 100');
+          }
+
           console.log(`***** process payment for user ${user?.name} - amount: ${amount}`);
-        } else {
-          console.log(`***** user ${userId} not found`);
-        }
-      });
+          // TODO process payment
+
+          return { amount, user };
+        })
+      );
   }
 
   onModuleInit() {
     this.authClient.subscribeToResponseOf('get_user');
+    this.authClient.subscribeToResponseOf('create_user');
+  }
+
+  private throwError(code: HttpStatus, message: string) {
+    throw new RpcException({
+      code,
+      message,
+      response: { message, code }
+    });
   }
 }

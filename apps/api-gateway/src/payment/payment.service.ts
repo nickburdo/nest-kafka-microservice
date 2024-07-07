@@ -1,12 +1,16 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { ClientKafka } from '@nestjs/microservices';
 import { MakePaymentDto } from '@nestjs-microservices/shared/dto';
+import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
+import { ClientKafka } from '@nestjs/microservices';
 
 @Injectable()
-export class PaymentService {
+export class PaymentService implements OnModuleInit {
   constructor(@Inject('PAYMENT_MICROSERVICE') private readonly paymentClient: ClientKafka) {}
 
   makePayment(makePaymentDto: MakePaymentDto) {
-    this.paymentClient.emit('process_payment', JSON.stringify(makePaymentDto));
+    return this.paymentClient.send('process_payment', JSON.stringify(makePaymentDto));
+  }
+
+  onModuleInit() {
+    this.paymentClient.subscribeToResponseOf('process_payment');
   }
 }

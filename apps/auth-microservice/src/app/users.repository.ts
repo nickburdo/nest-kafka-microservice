@@ -5,8 +5,11 @@ import { Injectable } from '@nestjs/common';
 export class UsersRepository {
   private readonly users: User[] = [];
 
-  save(user: User) {
-    this.users.push({ ...user, id: this.users.length + 1 });
+  save(user: User): User {
+    const newUser = { ...user, id: this.users.length + 1 };
+    this.users.push(newUser);
+
+    return newUser;
   }
 
   findOne(id: number) {

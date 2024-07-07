@@ -7,8 +7,8 @@ import { UsersRepository } from './users.repository';
 export class AppService {
   constructor(private readonly usersRepository: UsersRepository) {}
 
-  createUser(data: CreateUserDto): void {
-    this.usersRepository.save(data);
+  createUser(data: CreateUserDto): User {
+    return this.usersRepository.save(data);
   }
 
   getUser(id: number): User {
